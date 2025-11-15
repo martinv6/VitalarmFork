@@ -2,26 +2,27 @@ package com.example.vitalarmapp
 
 import android.app.TimePickerDialog
 import android.content.Intent
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
+import android.view.View
+import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
+import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.isVisible
+import androidx.lifecycle.lifecycleScope
 import com.example.vitalarmapp.databinding.ActivityAddMedicationBinding
 import com.example.vitalarmapp.utils.FirebaseManager
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
 
 class AddMedicationActivity : AppCompatActivity() {
     private lateinit var binding: ActivityAddMedicationBinding
-    private val coroutineScope = CoroutineScope(Dispatchers.Main)
-    private val alarmTimes = mutableListOf<String>()
+    private val alarmTimes = sortedSetOf<String>()
     private var selectedMedicationName: String = ""
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -40,9 +41,9 @@ class AddMedicationActivity : AppCompatActivity() {
     }
 
     private fun loadBaseMedications() {
-        coroutineScope.launch {
+        lifecycleScope.launch {
             try {
-                binding.progressBar.visibility = android.view.View.VISIBLE
+                setLoading(true)
 
                 val medications = withContext(Dispatchers.IO) {
                     FirebaseManager.getBaseMedications()
@@ -66,23 +67,39 @@ class AddMedicationActivity : AppCompatActivity() {
                 adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
                 binding.spinnerMedications.adapter = adapter
 
-                // Seleccionar el primero por defecto
-                if (medicationNames.isNotEmpty()) {
-                    selectedMedicationName = medicationNames[0]
+                binding.spinnerMedications.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+                    override fun onItemSelected(parent: AdapterView<*>, view: View?, position: Int, id: Long) {
+                        selectedMedicationName = parent.getItemAtPosition(position) as? String ?: ""
+                    }
+
+                    override fun onNothingSelected(parent: AdapterView<*>) {
+                        selectedMedicationName = ""
+                    }
                 }
+
+                if (medicationNames.isNotEmpty()) {
+                    binding.spinnerMedications.setSelection(0)
+                }
+
+                showMedicationSelection()
 
             } catch (e: Exception) {
                 Log.e("AddMedication", "Error: ${e.message}")
                 Toast.makeText(this@AddMedicationActivity, "Error al cargar medicamentos", Toast.LENGTH_SHORT).show()
             } finally {
-                binding.progressBar.visibility = android.view.View.GONE
+                setLoading(false)
             }
         }
     }
 
     private fun showNoMedicationsMessage() {
-        binding.layoutMedicationSelection.visibility = android.view.View.GONE
-        binding.layoutNoMedications.visibility = android.view.View.VISIBLE
+        binding.layoutMedicationSelection.visibility = View.GONE
+        binding.layoutNoMedications.visibility = View.VISIBLE
+    }
+
+    private fun showMedicationSelection() {
+        binding.layoutMedicationSelection.visibility = View.VISIBLE
+        binding.layoutNoMedications.visibility = View.GONE
     }
 
     private fun setupClickListeners(personId: String) {
@@ -112,11 +129,12 @@ class AddMedicationActivity : AppCompatActivity() {
         val minute = calendar.get(Calendar.MINUTE)
 
         val timePicker = TimePickerDialog(this, { _, selectedHour, selectedMinute ->
-            val timeString = String.format("%02d:%02d", selectedHour, selectedMinute)
+            val timeString = String.format(Locale.getDefault(), "%02d:%02d", selectedHour, selectedMinute)
 
-            if (!alarmTimes.contains(timeString)) {
-                alarmTimes.add(timeString)
+            if (alarmTimes.add(timeString)) {
                 updateAlarmTimesDisplay()
+            } else {
+                Toast.makeText(this, "El horario ya fue agregado", Toast.LENGTH_SHORT).show()
             }
         }, hour, minute, true)
 
@@ -155,12 +173,12 @@ class AddMedicationActivity : AppCompatActivity() {
             return
         }
 
-        coroutineScope.launch {
+        lifecycleScope.launch {
             try {
-                binding.progressBar.visibility = android.view.View.VISIBLE
+                setLoading(true)
 
                 val success = withContext(Dispatchers.IO) {
-                    FirebaseManager.addMedication(personId, selectedMedicationName, dosage, frequency, alarmTimes)
+                    FirebaseManager.addMedication(personId, selectedMedicationName, dosage, frequency, alarmTimes.toList())
                 }
 
                 if (success) {
@@ -174,9 +192,13 @@ class AddMedicationActivity : AppCompatActivity() {
                 Log.e("AddMedication", "Error: ${e.message}")
                 Toast.makeText(this@AddMedicationActivity, "Error al agregar", Toast.LENGTH_SHORT).show()
             } finally {
-                binding.progressBar.visibility = android.view.View.GONE
+                setLoading(false)
             }
         }
 
+    }
+
+    private fun setLoading(isLoading: Boolean) {
+        binding.progressBar.isVisible = isLoading
     }
 }
