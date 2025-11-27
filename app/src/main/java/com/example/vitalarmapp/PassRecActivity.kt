@@ -79,29 +79,7 @@ class PassRecActivity : AppCompatActivity() {
             return
         }
 
-        verifyEmailRegistration(email)
-    }
-
-    private fun verifyEmailRegistration(email: String) {
-        setLoading(true)
-        firebaseAuth.fetchSignInMethodsForEmail(email).addOnCompleteListener { task ->
-            if (task.isSuccessful) {
-                val signInMethods = task.result?.signInMethods
-                if (signInMethods.isNullOrEmpty()) {
-                    setLoading(false)
-                    showEmailNotRegisteredDialog(email)
-                } else {
-                    sendResetEmail(email)
-                }
-            } else {
-                setLoading(false)
-                val message = when (task.exception) {
-                    is FirebaseNetworkException -> getString(R.string.error_detail_network)
-                    else -> getString(R.string.pass_rec_error_generic)
-                }
-                Snackbar.make(binding.passRecCoordinator, message, Snackbar.LENGTH_LONG).show()
-            }
-        }
+        sendResetEmail(email)
     }
 
     private fun sendResetEmail(email: String) {
@@ -113,11 +91,17 @@ class PassRecActivity : AppCompatActivity() {
                 intent.putExtra(PassResetWaitingActivity.EXTRA_EMAIL, email)
                 startActivity(intent)
             } else {
-                val message = when (task.exception) {
+                val exception = task.exception
+                val message = when (exception) {
                     is FirebaseAuthInvalidUserException -> getString(R.string.pass_rec_error_user_not_found)
                     is FirebaseNetworkException -> getString(R.string.error_detail_network)
                     else -> getString(R.string.pass_rec_error_generic)
                 }
+
+                if (exception is FirebaseAuthInvalidUserException) {
+                    showEmailNotRegisteredDialog(email)
+                }
+
                 binding.passRecEmailInputLayout.error = message
                 Snackbar.make(binding.passRecCoordinator, message, Snackbar.LENGTH_LONG).show()
             }

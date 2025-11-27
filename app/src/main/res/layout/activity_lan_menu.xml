@@ -1,120 +1,153 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/md_theme_background"
-    android:orientation="vertical"
-    android:paddingHorizontal="32dp"
-    android:paddingTop="72dp"
     tools:context=".LanMenuActivity">
 
-    <TextView
-        android:layout_width="wrap_content"
+    <ScrollView
+        android:id="@+id/lanMenuScroll"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:paddingHorizontal="32dp"
+        android:paddingTop="72dp"
+        android:fillViewport="true"
+        app:layout_constraintBottom_toTopOf="@+id/lanNavigationBar"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginBottom="32dp"
+                android:text="@string/main_menu"
+                android:textColor="@color/md_theme_primary"
+                android:textSize="24sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/tvBienvenida"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginBottom="24dp"
+                android:text="Bienvenido, Usuario"
+                android:textColor="@color/md_theme_primary"
+                android:textSize="18sp" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnIngresarPersona"
+                android:layout_width="match_parent"
+                android:layout_height="55dp"
+                android:layout_marginBottom="16dp"
+                android:backgroundTint="@color/md_theme_primary"
+                android:text="@string/add_person_to_care"
+                android:textColor="@color/md_theme_onPrimary" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                android:orientation="horizontal">
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnPersonasCuidado"
+                    android:layout_width="0dp"
+                    android:layout_height="56dp"
+                    android:layout_marginEnd="6dp"
+                    android:layout_weight="1"
+                    android:backgroundTint="@color/md_theme_secondaryContainer"
+                    android:text="@string/people_list"
+                    android:textColor="@color/md_theme_onSecondaryContainer" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnMedicamentos"
+                    android:layout_width="0dp"
+                    android:layout_height="56dp"
+                    android:layout_marginStart="6dp"
+                    android:layout_weight="1"
+                    android:backgroundTint="@color/md_theme_secondaryContainer"
+                    android:text="@string/medications"
+                    android:textColor="@color/md_theme_onSecondaryContainer" />
+            </LinearLayout>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_marginBottom="24dp"
+                android:background="?android:attr/listDivider" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginBottom="16dp"
+                android:text="@string/next_medication"
+                android:textColor="@color/md_theme_primary"
+                android:textSize="16sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/tvMedicamentoNombre"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginBottom="8dp"
+                android:text="@string/medication_name"
+                android:textColor="@color/md_theme_onBackground"
+                android:textSize="18sp" />
+
+            <TextView
+                android:id="@+id/tvHoraAdministracion"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginBottom="16dp"
+                android:text="@string/time"
+                android:textColor="@color/md_theme_onBackground"
+                android:textSize="16sp" />
+
+            <TextView
+                android:id="@+id/tvPersonaAdministrar"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginBottom="32dp"
+                android:text="@string/person"
+                android:textColor="@color/md_theme_onBackground"
+                android:textSize="14sp" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnCerrarSesion"
+                android:layout_width="wrap_content"
+                android:layout_height="55dp"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginBottom="24dp"
+                android:backgroundTint="@color/md_theme_secondary"
+                android:text="@string/logout"
+                android:textColor="@color/md_theme_onSecondary" />
+        </LinearLayout>
+    </ScrollView>
+
+    <com.google.android.material.navigation.NavigationBarView
+        android:id="@+id/lanNavigationBar"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal"
-        android:layout_marginBottom="32dp"
-        android:text="@string/main_menu"
-        android:textColor="@color/md_theme_primary"
-        android:textSize="24sp"
-        android:textStyle="bold" />
-    <TextView
-        android:id="@+id/tvBienvenida"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal"
-        android:layout_marginBottom="24dp"
-        android:text="Bienvenido, Usuario"
-        android:textColor="@color/md_theme_primary"
-        android:textSize="18sp" />
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/btnIngresarPersona"
-        android:layout_width="match_parent"
-        android:layout_height="55dp"
-        android:layout_marginBottom="16dp"
-        android:backgroundTint="@color/md_theme_primary"
-        android:text="@string/add_person_to_care"
-        android:textColor="@color/md_theme_onPrimary" />
+        android:background="@color/md_theme_surface"
+        app:itemRippleColor="?attr/colorControlHighlight"
+        app:labelVisibilityMode="labeled"
+        app:menu="@menu/lan_menu_navigation"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
 
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="16dp"
-        android:orientation="horizontal">
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnPersonasCuidado"
-            android:layout_width="0dp"
-            android:layout_height="56dp"
-            android:layout_marginEnd="6dp"
-            android:layout_weight="1"
-            android:backgroundTint="@color/md_theme_secondaryContainer"
-            android:text="@string/people_list"
-            android:textColor="@color/md_theme_onSecondaryContainer" />
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnMedicamentos"
-            android:layout_width="0dp"
-            android:layout_height="56dp"
-            android:layout_marginStart="6dp"
-            android:layout_weight="1"
-            android:backgroundTint="@color/md_theme_secondaryContainer"
-            android:text="@string/medications"
-            android:textColor="@color/md_theme_onSecondaryContainer" />
-    </LinearLayout>
-
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="1dp"
-        android:layout_marginBottom="24dp"
-        android:background="?android:attr/listDivider" />
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal"
-        android:layout_marginBottom="16dp"
-        android:text="@string/next_medication"
-        android:textColor="@color/md_theme_primary"
-        android:textSize="16sp"
-        android:textStyle="bold" />
-
-    <TextView
-        android:id="@+id/tvMedicamentoNombre"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal"
-        android:layout_marginBottom="8dp"
-        android:text="@string/medication_name"
-        android:textColor="@color/md_theme_onBackground"
-        android:textSize="18sp" />
-
-    <TextView
-        android:id="@+id/tvHoraAdministracion"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal"
-        android:layout_marginBottom="16dp"
-        android:text="@string/time"
-        android:textColor="@color/md_theme_onBackground"
-        android:textSize="16sp" />
-
-    <TextView
-        android:id="@+id/tvPersonaAdministrar"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal"
-        android:layout_marginBottom="32dp"
-        android:text="@string/person"
-        android:textColor="@color/md_theme_onBackground"
-        android:textSize="14sp" />
-
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/btnCerrarSesion"
-        android:layout_width="wrap_content"
-        android:layout_height="55dp"
-        android:layout_gravity="center_horizontal"
-        android:backgroundTint="@color/md_theme_secondary"
-        android:text="@string/logout"
-        android:textColor="@color/md_theme_onSecondary" />
-</LinearLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

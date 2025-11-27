@@ -27,6 +27,7 @@ class LanMenuActivity : AppCompatActivity() {
         enableEdgeToEdge()
         setContentView(binding.root)
         initListeners()
+        initNavigationBar()
         loadUserName()
         loadNextMedication()
     }
@@ -59,6 +60,24 @@ class LanMenuActivity : AppCompatActivity() {
 
         binding.btnCerrarSesion.setOnClickListener {
             logoutUser()
+        }
+    }
+
+    private fun initNavigationBar() {
+        binding.lanNavigationBar.selectedItemId = R.id.nav_home
+        binding.lanNavigationBar.setOnItemSelectedListener { item ->
+            when (item.itemId) {
+                R.id.nav_home -> true
+                R.id.nav_add -> {
+                    startActivity(Intent(this, AddPersonActivity::class.java))
+                    true
+                }
+                R.id.nav_profile -> {
+                    startActivity(Intent(this, PersonListActivity::class.java))
+                    true
+                }
+                else -> false
+            }
         }
     }
 
