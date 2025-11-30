@@ -57,6 +57,15 @@ class AddMedsActivity : AppCompatActivity() {
             }
         }
 
+        binding.searchBar.setOnMenuItemClickListener { menuItem ->
+            if (menuItem.itemId == R.id.action_search) {
+                openSearchView()
+                true
+            } else {
+                false
+            }
+        }
+
         binding.searchView.setupWithSearchBar(binding.searchBar)
         binding.searchView.editText.hint = getString(R.string.add_meds_search_placeholder)
 
@@ -76,6 +85,13 @@ class AddMedsActivity : AppCompatActivity() {
         }
 
         updateAddMedicationState()
+    }
+
+    private fun openSearchView() {
+        if (!binding.searchView.isShowing) {
+            binding.searchView.show()
+        }
+        binding.searchView.editText.requestFocus()
     }
 
     private fun loadBaseMedications() {
