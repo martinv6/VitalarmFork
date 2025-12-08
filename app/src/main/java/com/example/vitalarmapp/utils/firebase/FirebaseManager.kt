@@ -142,14 +142,19 @@ object FirebaseManager {
         gender: String,
         notes: String,
     ): AddPersonResult {
-        val userId = getCurrentUserId()
-        if (userId == null) {
+        val firebaseUser = auth.currentUser
+        val userId = firebaseUser?.uid
+        if (firebaseUser == null || userId == null) {
             Log.e(LOG_TAG, "Error añadiendo persona: usuario no autenticado")
             return AddPersonResult.AuthError()
         }
 
         return try {
-            val userName = auth.currentUser?.displayName ?: getCurrentUserName()
+            // Refresca el token para evitar fallos de permiso por tokens expirados
+            firebaseUser.getIdToken(true).await()
+
+            val userName = firebaseUser.displayName ?: getCurrentUserName()
+            ensureUserDocumentExists(firebaseUser, userName)
 
             val personData = mutableMapOf<String, Any>(
                 "name" to name,
@@ -174,6 +179,28 @@ object FirebaseManager {
         } catch (e: Exception) {
             Log.e(LOG_TAG, "Error añadiendo persona: ${e.message}", e)
             AddPersonResult.UnknownError(e.localizedMessage)
+        }
+    }
+
+    private suspend fun ensureUserDocumentExists(firebaseUser: com.google.firebase.auth.FirebaseUser, userName: String) {
+        try {
+            val userDocRef = db.collection(COLLECTION_USERS).document(firebaseUser.uid)
+            val userDoc = userDocRef.get().await()
+
+            if (!userDoc.exists()) {
+                val profileData = hashMapOf(
+                    "id" to firebaseUser.uid,
+                    "name" to userName,
+                    "rut" to "",
+                    "email" to (firebaseUser.email ?: ""),
+                    "createdAt" to System.currentTimeMillis()
+                )
+
+                userDocRef.set(profileData).await()
+                Log.d(LOG_TAG, "📄 Perfil de usuario creado automáticamente para ${firebaseUser.uid}")
+            }
+        } catch (e: Exception) {
+            Log.w(LOG_TAG, "⚠️ No se pudo verificar/crear perfil de usuario: ${e.message}")
         }
     }
 

@@ -13,18 +13,21 @@ import org.junit.runner.RunWith
 class ChangelogRepositoryInstrumentedTest {
 
     @Test
-    fun loadEntriesReturnsFriendlyHighlights() {
+    fun loadEntriesReturnRawMarkdownContent() {
         val context: Context = ApplicationProvider.getApplicationContext()
         val repository = ChangelogRepository()
 
         val entries = repository.loadEntries(context)
 
         assertFalse(entries.isEmpty())
-        assertTrue(entries.all { it.headline.isNotBlank() && it.subhead.isNotBlank() })
+        val firstSummary = entries.first().subhead
+
+        assertTrue(firstSummary.contains("Centro de Novedades", ignoreCase = true))
+        assertTrue(firstSummary.contains("NotificationsActivity"))
     }
 
     @Test
-    fun parseEntriesFiltersAndSummarizesSections() {
+    fun parseEntriesKeepsHeadingsAndBullets() {
         val context: Context = ApplicationProvider.getApplicationContext()
         val repository = ChangelogRepository()
         val changelogText = """
@@ -41,7 +44,16 @@ class ChangelogRepositoryInstrumentedTest {
 
         assertEquals(1, entries.size)
         val entry = entries.first()
+        val expected = """
+            Added
+            • Registro de pacientes con validación estricta
+            • Listados y navegación más ágiles
+            Changed
+            • Interfaz de usuario con temas Material Design 3
+            • Librerias y dependencias actualizadas
+        """.trimIndent()
+
         assertTrue(entry.headline.contains("0.9.99"))
-        assertTrue(entry.subhead.contains("paciente", ignoreCase = true) || entry.subhead.contains("interfaz", ignoreCase = true))
+        assertEquals(expected, entry.subhead)
     }
 }

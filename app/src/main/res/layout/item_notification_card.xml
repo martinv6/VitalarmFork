@@ -25,8 +25,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="6dp"
-            android:ellipsize="end"
-            android:maxLines="3"
+            android:lineSpacingExtra="4dp"
             android:textAppearance="@style/TextAppearance.Material3.BodyMedium"
             android:textColor="?attr/colorOnSurfaceVariant"
             tools:text="Patient registration now shows who created each record and forms ask for required info before saving." />
