@@ -27,6 +27,7 @@ credentials = "1.5.0"
 activityVersion = "1.12.1"
 mlkitTranslate = "17.0.3"
 mlkitLanguageId = "17.0.6"
+robolectric = "4.13"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -71,6 +72,7 @@ androidx-credentials-play-services-auth = { group = "androidx.credentials", name
 activity = { group = "androidx.activity", name = "activity", version.ref = "activityVersion" }
 mlkit-translate = { module = "com.google.mlkit:translate", version.ref = "mlkitTranslate" }
 mlkit-languageid = { module = "com.google.mlkit:language-id", version.ref = "mlkitLanguageId" }
+robolectric = { group = "org.robolectric", name = "robolectric", version.ref = "robolectric" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
