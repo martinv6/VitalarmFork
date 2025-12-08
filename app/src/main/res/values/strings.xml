@@ -212,9 +212,9 @@
     <string name="add_meds_selected_title">Medicamento seleccionado</string>
     <string name="add_meds_route_label">Vía: </string>
     <string name="add_meds_substance_label" tools:keep="@string/add_meds_substance_label">Composición: </string>
-    <string name="add_meds_composition_label">Composición</string>
-    <string name="add_meds_dosage_label">Dosis</string>
-    <string name="add_meds_form_label">Formato</string>
+    <string name="add_meds_composition_label">Composición: </string>
+    <string name="add_meds_dosage_label">Dosis: </string>
+    <string name="add_meds_form_label">Formato: </string>
     <string name="add_meds_dosage_dialog_title">Agrega la dosificación</string>
     <string name="add_meds_dosage_dialog_supporting">Selecciona el formato y la unidad correcta para este medicamento antes de guardarlo.</string>
     <string name="add_meds_dosage_form_hint">Formato del medicamento</string>

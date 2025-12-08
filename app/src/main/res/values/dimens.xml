@@ -1,5 +1,5 @@
 <resources>
-    <dimen name="profile_qr_size">200dp</dimen>
-    <dimen name="add_meds_card_margin_with_search">96dp</dimen>
+    <dimen name="profile_qr_size">320dp</dimen>
+    <dimen name="add_meds_card_margin_with_search">48dp</dimen>
     <dimen name="add_meds_card_margin_with_selection">43dp</dimen>
 </resources>
