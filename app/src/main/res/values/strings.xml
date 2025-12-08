@@ -297,6 +297,7 @@
     <string name="notifications_added_prefix">Nuevos: %1$s.</string>
     <string name="notifications_changed_prefix">Mejoras: %1$s.</string>
     <string name="notifications_empty">No hay novedades para mostrar por ahora.</string>
+    <string name="notifications_summary_fallback">Revisa las últimas novedades de la app.</string>
     <string name="settings_title">Ajustes</string>
     <string name="settings_material_you_title">Activar Material You</string>
     <string name="settings_material_you_subtitle">El color estará basado en tu wallpaper</string>

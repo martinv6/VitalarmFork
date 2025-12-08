@@ -3,7 +3,6 @@ package com.example.vitalarmapp.notifications
 import android.content.Context
 import com.example.vitalarmapp.R
 import androidx.annotation.VisibleForTesting
-import java.util.Locale
 
 internal class ChangelogRepository {
 
@@ -58,7 +57,20 @@ internal class ChangelogRepository {
             )
         }
 
-        return highlights.joinToString(" ")
+        val summary = highlights.joinToString(" ")
+        return summary.ifBlank { fallbackSummary(rawSection, context) }
+    }
+
+    private fun fallbackSummary(rawSection: String, context: Context): String {
+        val firstBullet = rawSection.lines()
+            .map { it.trim() }
+            .firstOrNull { it.startsWith("-") }
+            ?.removePrefix("-")
+            ?.trim()
+            ?.let { simplifyText(it) }
+            ?.takeIf { it.isNotBlank() }
+
+        return firstBullet ?: context.getString(R.string.notifications_summary_fallback)
     }
 
     private fun collectSectionBullets(body: String, heading: String): List<String> {
@@ -86,19 +98,20 @@ internal class ChangelogRepository {
     }
 
     private fun simplifyText(text: String): String {
-        val cleaned = text
+        var friendlyText = text
             .replace("`", "")
             .replace(Regex("\\*\\*([^*]+)\\*\\*"), "$1")
             .replace(Regex("[:\\s]+"), " ")
             .trim()
 
         friendlyMappings.forEach { (keyword, replacement) ->
-            if (cleaned.lowercase(Locale.getDefault()).contains(keyword)) {
-                return replacement
+            val regex = Regex(keyword, RegexOption.IGNORE_CASE)
+            if (regex.containsMatchIn(friendlyText)) {
+                friendlyText = friendlyText.replace(regex, replacement)
             }
         }
 
-        return cleaned
+        return friendlyText.trim()
     }
 
     companion object {

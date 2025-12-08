@@ -9,7 +9,8 @@ import androidx.core.widget.doAfterTextChanged
 import androidx.lifecycle.lifecycleScope
 import com.example.vitalarmapp.databinding.ActivityAddPatsBinding
 import com.example.vitalarmapp.utils.firebase.AddPersonResult
-import com.example.vitalarmapp.utils.firebase.FirebaseManager
+import com.example.vitalarmapp.utils.firebase.FirebasePatientRegistrar
+import com.example.vitalarmapp.utils.firebase.PatientRegistrar
 import com.google.android.material.datepicker.CalendarConstraints
 import com.google.android.material.datepicker.DateValidatorPointBackward
 import com.google.android.material.datepicker.MaterialDatePicker
@@ -118,7 +119,7 @@ class AddPatsActivity : AppCompatActivity() {
 
         if (hasError) return
 
-        if (FirebaseManager.getCurrentUserId().isNullOrEmpty()) {
+        if (patientRegistrar.getCurrentUserId().isNullOrEmpty()) {
             showErrorSnackbar(
                 messageRes = R.string.add_patient_auth_error_snackbar,
                 detail = getString(R.string.add_patient_generic_error_detail)
@@ -129,7 +130,7 @@ class AddPatsActivity : AppCompatActivity() {
         binding.patientContinueBtn.isEnabled = false
 
         lifecycleScope.launch {
-            val result = FirebaseManager.addPerson(
+            val result = patientRegistrar.addPerson(
                 name = name,
                 birthDate = birthDate,
                 gender = gender,
@@ -246,6 +247,8 @@ class AddPatsActivity : AppCompatActivity() {
     }
 
     companion object {
+        internal var patientRegistrar: PatientRegistrar = FirebasePatientRegistrar
+
         fun intent(context: Context): Intent = Intent(context, AddPatsActivity::class.java)
     }
 }

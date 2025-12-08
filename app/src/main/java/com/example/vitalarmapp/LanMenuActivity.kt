@@ -43,6 +43,11 @@ class LanMenuActivity : AppCompatActivity() {
         loadUserNameIfNeeded()
     }
 
+    override fun onResume() {
+        super.onResume()
+        refreshCurrentTab()
+    }
+
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
         outState.putInt(SELECTED_TAB_KEY, binding.lanMenuBottomNavigation.selectedItemId)
@@ -83,6 +88,15 @@ class LanMenuActivity : AppCompatActivity() {
             (fragment as? HomeTabFragment)?.refreshContent()
         }
         return true
+    }
+
+    private fun refreshCurrentTab() {
+        val currentFragment = supportFragmentManager.findFragmentByTag(fragmentTag(currentTabId))
+        if (currentTabId == R.id.nav_home) {
+            (currentFragment as? HomeTabFragment)?.refreshContent()
+            loadUserNameIfNeeded()
+            updateToolbarGreeting()
+        }
     }
 
     private fun handleTabReselected(itemId: Int) {

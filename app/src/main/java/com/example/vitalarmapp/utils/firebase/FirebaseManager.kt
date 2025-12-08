@@ -405,3 +405,24 @@ object FirebaseManager {
         }
     }
 }
+
+internal interface PatientRegistrar {
+    fun getCurrentUserId(): String?
+    suspend fun addPerson(
+        name: String,
+        birthDate: String,
+        gender: String,
+        notes: String,
+    ): AddPersonResult
+}
+
+internal object FirebasePatientRegistrar : PatientRegistrar {
+    override fun getCurrentUserId(): String? = FirebaseManager.getCurrentUserId()
+
+    override suspend fun addPerson(
+        name: String,
+        birthDate: String,
+        gender: String,
+        notes: String,
+    ): AddPersonResult = FirebaseManager.addPerson(name, birthDate, gender, notes)
+}

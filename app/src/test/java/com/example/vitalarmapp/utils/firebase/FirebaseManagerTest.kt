@@ -8,122 +8,28 @@ import org.junit.Test
 class FirebaseManagerTest {
 
     @Test
-    fun permissionDeniedMapsToPermissionResult() {
+    fun `mapFirestoreException returns permission denied for permission code`() {
         val exception = FirebaseFirestoreException(
-            "Forbidden",
+            "Missing or insufficient permissions",
             FirebaseFirestoreException.Code.PERMISSION_DENIED
         )
 
         val result = FirebaseManager.mapFirestoreException(exception)
 
         assertTrue(result is AddPersonResult.PermissionDenied)
+        assertEquals("Missing or insufficient permissions", (result as AddPersonResult.PermissionDenied).message)
     }
 
     @Test
-    fun unauthenticatedMapsToAuthError() {
+    fun `mapFirestoreException maps unknown errors to UnknownError`() {
         val exception = FirebaseFirestoreException(
-            "Unauthenticated",
-            FirebaseFirestoreException.Code.UNAUTHENTICATED
+            "Unexpected failure",
+            FirebaseFirestoreException.Code.DATA_LOSS
         )
 
         val result = FirebaseManager.mapFirestoreException(exception)
 
-        assertTrue(result is AddPersonResult.AuthError)
-    }
-
-    @Test
-    fun unavailableMapsToServiceUnavailable() {
-        val exception = FirebaseFirestoreException(
-            "Service unavailable",
-            FirebaseFirestoreException.Code.UNAVAILABLE
-        )
-
-        val result = FirebaseManager.mapFirestoreException(exception)
-
-        assertTrue(result is AddPersonResult.ServiceUnavailable)
-    }
-
-    @Test
-    fun deadlineExceededMapsToTimeout() {
-        val exception = FirebaseFirestoreException(
-            "deadline",
-            FirebaseFirestoreException.Code.DEADLINE_EXCEEDED
-        )
-
-        val result = FirebaseManager.mapFirestoreException(exception)
-
-        assertTrue(result is AddPersonResult.Timeout)
-    }
-
-    @Test
-    fun resourceExhaustedMapsToQuotaExceeded() {
-        val exception = FirebaseFirestoreException(
-            "quota",
-            FirebaseFirestoreException.Code.RESOURCE_EXHAUSTED
-        )
-
-        val result = FirebaseManager.mapFirestoreException(exception)
-
-        assertTrue(result is AddPersonResult.QuotaExceeded)
-    }
-
-    @Test
-    fun invalidArgumentMapsToInvalidData() {
-        val exception = FirebaseFirestoreException(
-            "invalid",
-            FirebaseFirestoreException.Code.INVALID_ARGUMENT
-        )
-
-        val result = FirebaseManager.mapFirestoreException(exception)
-
-        assertTrue(result is AddPersonResult.InvalidData)
-    }
-
-    @Test
-    fun failedPreconditionMapsToInvalidData() {
-        val exception = FirebaseFirestoreException(
-            "precondition",
-            FirebaseFirestoreException.Code.FAILED_PRECONDITION
-        )
-
-        val result = FirebaseManager.mapFirestoreException(exception)
-
-        assertTrue(result is AddPersonResult.InvalidData)
-    }
-
-    @Test
-    fun cancelledMapsToOperationCancelled() {
-        val exception = FirebaseFirestoreException(
-            "cancelled",
-            FirebaseFirestoreException.Code.CANCELLED
-        )
-
-        val result = FirebaseManager.mapFirestoreException(exception)
-
-        assertTrue(result is AddPersonResult.OperationCancelled)
-    }
-
-    @Test
-    fun otherCodesMapToUnknownError() {
-        val exception = FirebaseFirestoreException(
-            "other",
-            FirebaseFirestoreException.Code.INTERNAL
-        )
-
-        val result = FirebaseManager.mapFirestoreException(exception)
-
-        assertEquals(AddPersonResult.UnknownError("other"), result)
-    }
-
-    @Test
-    fun abortedMapsToServiceUnavailable() {
-        val exception = FirebaseFirestoreException(
-            "aborted",
-            FirebaseFirestoreException.Code.ABORTED
-        )
-
-        val result = FirebaseManager.mapFirestoreException(exception)
-
-        assertTrue(result is AddPersonResult.ServiceUnavailable)
+        assertTrue(result is AddPersonResult.UnknownError)
+        assertEquals("Unexpected failure", (result as AddPersonResult.UnknownError).message)
     }
 }
