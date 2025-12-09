@@ -18,11 +18,12 @@ import androidx.core.widget.addTextChangedListener
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.example.vitalarmapp.adapters.MedicationForm
 import com.example.vitalarmapp.adapters.MedicationSearchAdapter
 import com.example.vitalarmapp.adapters.MedicationSearchItem
-import com.example.vitalarmapp.adapters.MedicationForm
 import com.example.vitalarmapp.databinding.ActivityAddMedsBinding
 import com.example.vitalarmapp.databinding.DialogMedicationDosageBinding
+import com.example.vitalarmapp.models.Medication
 import com.example.vitalarmapp.utils.firebase.FirebaseManager
 import com.google.android.gms.tasks.Task
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
@@ -75,6 +76,7 @@ class AddMedsActivity : AppCompatActivity() {
     }
     private val translatorCache = mutableMapOf<String, Translator>()
     private lateinit var searchAdapter: MedicationSearchAdapter
+    private var patientId: String? = null
     private var selectedMedication: MedicationSearchItem? = null
     private var displayedMedication: MedicationSearchItem? = null
     private var ignoreQueryChanges: Boolean = false
@@ -221,6 +223,8 @@ class AddMedsActivity : AppCompatActivity() {
         enableEdgeToEdge()
         setContentView(binding.root)
 
+        patientId = intent.getStringExtra(EXTRA_PATIENT_ID)
+
         setupSearchBar()
         setupSearch()
         setupSelectionAppBar()
@@ -320,7 +324,14 @@ class AddMedsActivity : AppCompatActivity() {
             binding.addMedicationButton.isEnabled = false
 
             lifecycleScope.launch {
-                val saved = FirebaseManager.saveRegisteredMedication(medication)
+                val saved = if (patientId.isNullOrBlank()) {
+                    FirebaseManager.saveRegisteredMedication(medication)
+                } else {
+                    FirebaseManager.saveMedicationForPerson(
+                        patientId = patientId!!,
+                        medication = medication.toMedication(patientId!!)
+                    )
+                }
                 binding.addMedicationButton.isEnabled = true
 
                 if (saved) {
@@ -715,6 +726,23 @@ class AddMedsActivity : AppCompatActivity() {
         }
     }
 
+    private fun MedicationSearchItem.toMedication(patientId: String): Medication {
+        val dosageValue = dosageValue?.takeIf { it.isNotBlank() }
+        val dosageUnit = dosageUnit?.takeIf { it.isNotBlank() }
+        val dosageLabel = listOfNotNull(dosageValue, dosageUnit)
+            .joinToString(" ")
+            .trim()
+
+        return Medication(
+            personId = patientId,
+            name = name,
+            dosage = dosageLabel,
+            frequency = "",
+            alarmTimes = emptyList(),
+            createdAt = System.currentTimeMillis()
+        )
+    }
+
     override fun onDestroy() {
         searchJob?.cancel()
         translationJob?.cancel()
@@ -725,7 +753,12 @@ class AddMedsActivity : AppCompatActivity() {
     }
 
     companion object {
-        fun intent(context: Context): Intent = Intent(context, AddMedsActivity::class.java)
+        private const val EXTRA_PATIENT_ID = "extra_patient_id"
+
+        fun intent(context: Context, patientId: String? = null): Intent =
+            Intent(context, AddMedsActivity::class.java).apply {
+                patientId?.let { putExtra(EXTRA_PATIENT_ID, it) }
+            }
     }
 
     private fun OpenFdaResponse?.toMedicationItems(): List<MedicationSearchItem> {

@@ -265,10 +265,7 @@ object FirebaseManager {
             medications.forEach { medication ->
                 val medId = medication.id
                 if (medId.isNotEmpty()) {
-                    db.collection(COLLECTION_MEDICATIONS)
-                        .document(medId)
-                        .delete()
-                        .await()
+                    deleteMedication(personId, medId)
                 }
             }
             patientsCollection(userId)
@@ -286,6 +283,11 @@ object FirebaseManager {
         db.collection(COLLECTION_USERS)
             .document(userId)
             .collection(COLLECTION_PATIENTS)
+
+    private fun medicationsCollection(userId: String, patientId: String) =
+        patientsCollection(userId)
+            .document(patientId)
+            .collection(COLLECTION_MEDICATIONS)
 
     private fun registeredMedicationsCollection(userId: String) =
         db.collection(COLLECTION_USERS)
@@ -371,12 +373,43 @@ object FirebaseManager {
         }
     }
 
+    suspend fun saveMedicationForPerson(patientId: String, medication: Medication): Boolean {
+        val userId = getCurrentUserId() ?: return false
+
+        return try {
+            val createdAt = medication.createdAt.takeIf { it > 0 } ?: System.currentTimeMillis()
+            val medicationData = mapOf(
+                "name" to medication.name,
+                "dosage" to medication.dosage,
+                "frequency" to medication.frequency,
+                "alarmTimes" to medication.alarmTimes.sorted(),
+                "createdAt" to createdAt,
+                "patientId" to patientId,
+                "personId" to patientId,
+                "userId" to userId,
+            )
+
+            val documentRef = if (medication.id.isNotBlank()) {
+                medicationsCollection(userId, patientId).document(medication.id)
+            } else {
+                medicationsCollection(userId, patientId).document()
+            }
+
+            documentRef.set(medicationData).await()
+            true
+        } catch (e: Exception) {
+            Log.e(LOG_TAG, "Error guardando medicamento: ${e.message}", e)
+            false
+        }
+    }
+
     suspend fun getMedicationsForPerson(personId: String): List<Medication> {
+        val userId = getCurrentUserId() ?: return emptyList()
+
         return try {
             Log.d(LOG_TAG, "🔍 Buscando medicamentos para persona: $personId")
 
-            val result = db.collection(COLLECTION_MEDICATIONS)
-                .whereEqualTo("personId", personId)
+            val result = medicationsCollection(userId, personId)
                 .get()
                 .await()
 
@@ -385,9 +418,14 @@ object FirebaseManager {
             val medications = result.documents.mapNotNull { document ->
                 Log.d(LOG_TAG, "📋 Procesando documento: ${document.id}")
                 val data = document.data ?: return@mapNotNull null
+                val patientId =
+                    data["patientId"] as? String
+                        ?: data["personId"] as? String
+                        ?: personId
                 Medication(
                     id = document.id,
-                    personId = data["personId"] as? String ?: "",
+                    personId = patientId,
+                    userId = data["userId"] as? String ?: userId,
                     name = data["name"] as? String ?: "",
                     dosage = data["dosage"] as? String ?: "",
                     frequency = data["frequency"] as? String ?: "",
@@ -411,11 +449,14 @@ object FirebaseManager {
     }
 
     suspend fun updateMedicationAlarmTimes(
+        patientId: String,
         medicationId: String,
         alarmTimes: List<String>,
     ): Boolean {
+        val userId = getCurrentUserId() ?: return false
+
         return try {
-            db.collection(COLLECTION_MEDICATIONS)
+            medicationsCollection(userId, patientId)
                 .document(medicationId)
                 .update("alarmTimes", alarmTimes.sorted())
                 .await()
@@ -423,6 +464,59 @@ object FirebaseManager {
         } catch (e: Exception) {
             Log.e(LOG_TAG, "❌ Error actualizando alarmas del medicamento: ${e.message}", e)
             false
+        }
+    }
+
+    suspend fun deleteMedication(patientId: String, medicationId: String): Boolean {
+        val userId = getCurrentUserId() ?: return false
+
+        return try {
+            medicationsCollection(userId, patientId)
+                .document(medicationId)
+                .delete()
+                .await()
+            true
+        } catch (e: Exception) {
+            Log.e(LOG_TAG, "Error eliminando medicamento: ${e.message}", e)
+            false
+        }
+    }
+
+    @VisibleForTesting
+    suspend fun migrateRootMedicationsToNested(): Int {
+        val userId = getCurrentUserId() ?: return 0
+
+        return try {
+            val snapshot = db.collection(COLLECTION_MEDICATIONS)
+                .whereEqualTo("userId", userId)
+                .get()
+                .await()
+
+            var migrated = 0
+            snapshot.documents.forEach { document ->
+                val data = document.data ?: return@forEach
+                val patientId =
+                    data["patientId"] as? String
+                        ?: data["personId"] as? String
+                        ?: return@forEach
+
+                medicationsCollection(userId, patientId)
+                    .document(document.id)
+                    .set(
+                        data + mapOf(
+                            "userId" to userId,
+                            "patientId" to patientId,
+                            "personId" to patientId,
+                        )
+                    )
+                    .await()
+                document.reference.delete().await()
+                migrated++
+            }
+            migrated
+        } catch (e: Exception) {
+            Log.e(LOG_TAG, "Error migrando medicamentos: ${e.message}", e)
+            0
         }
     }
 

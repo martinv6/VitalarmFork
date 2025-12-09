@@ -122,6 +122,7 @@ class AlarmListActivity : AppCompatActivity() {
                         AlarmListItem(
                             id = "${medication.id}-$time",
                             medicationId = medication.id,
+                            patientId = patient.id,
                             patientName = patientName,
                             medicationName = medication.name,
                             scheduleText = scheduleText,
@@ -201,11 +202,12 @@ class AlarmListActivity : AppCompatActivity() {
             val currentItems = alarmAdapter.currentItems()
             val selectedItems = currentItems.filter { selectedIds.contains(it.id) }
 
-            val groupedSelections = selectedItems.groupBy { it.medicationId }
+            val groupedSelections = selectedItems.groupBy { it.medicationId to it.patientId }
 
             val success = withContext(Dispatchers.IO) {
-                groupedSelections.entries.all { (medicationId, _) ->
-                    updateMedicationTimes(medicationId, currentItems)
+                groupedSelections.entries.all { (key, _) ->
+                    val (medicationId, patientId) = key
+                    updateMedicationTimes(patientId, medicationId, currentItems)
                 }
             }
 
@@ -219,14 +221,17 @@ class AlarmListActivity : AppCompatActivity() {
     }
 
     private suspend fun updateMedicationTimes(
+        patientId: String,
         medicationId: String,
         currentItems: List<AlarmListItem>,
     ): Boolean {
         val remainingTimes = currentItems.filter {
-            it.medicationId == medicationId && !selectedIds.contains(it.id)
+            it.medicationId == medicationId &&
+                it.patientId == patientId &&
+                !selectedIds.contains(it.id)
         }.map { it.originalTime }
 
-        return FirebaseManager.updateMedicationAlarmTimes(medicationId, remainingTimes)
+        return FirebaseManager.updateMedicationAlarmTimes(patientId, medicationId, remainingTimes)
     }
 
     private fun showSuccessDialog() {
